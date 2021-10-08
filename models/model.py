@@ -42,19 +42,19 @@ class MobileViT(nn.Module):
         self.stage2 = nn.Sequential(
             InvertedResidual(in_channels = features_list[3], out_channels = features_list[4], stride = 2, expand_ratio = expansion),
             MobileVitBlock(in_channels = features_list[4], out_channels = features_list[5], d_model = d_list[0],
-                           layers = transformer_depth[0], feature_size = img_size // 8)
+                           layers = transformer_depth[0], mlp_dim = d_list[0] * 2)
         )
 
         self.stage3 = nn.Sequential(
             InvertedResidual(in_channels = features_list[5], out_channels = features_list[6], stride = 2, expand_ratio = expansion),
             MobileVitBlock(in_channels = features_list[6], out_channels = features_list[7], d_model = d_list[1],
-                           layers = transformer_depth[1], feature_size = img_size // 16)
+                           layers = transformer_depth[1], mlp_dim = d_list[1] * 4)
         )
 
         self.stage4 = nn.Sequential(
             InvertedResidual(in_channels = features_list[7], out_channels = features_list[8], stride = 2, expand_ratio = expansion),
             MobileVitBlock(in_channels = features_list[8], out_channels = features_list[9], d_model = d_list[2],
-                           layers = transformer_depth[2], feature_size = img_size // 32),
+                           layers = transformer_depth[2], mlp_dim = d_list[2] * 4),
             nn.Conv2d(in_channels = features_list[9], out_channels = features_list[10], kernel_size = 1, stride = 1, padding = 0)
         )
 

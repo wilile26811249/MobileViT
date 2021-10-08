@@ -1,4 +1,5 @@
 from typing import Callable, Any, Optional, List
+from einops import rearrange
 
 import torch
 import torch.nn as nn
@@ -31,6 +32,87 @@ class ConvNormAct(nn.Module):
             x = self.norm_layer(x)
         if self.act is not None:
             x = self.act(x)
+        return x
+
+
+class PreNorm(nn.Module):
+    def __init__(self, dim, fn):
+        super().__init__()
+        self.norm = nn.LayerNorm(dim)
+        self.fn = fn
+
+    def forward(self, x, **kwargs):
+        return self.fn(self.norm(x), **kwargs)
+
+
+class FFN(nn.Module):
+    def __init__(self, dim, hidden_dim, dropout=0.):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(dim, hidden_dim),
+            nn.SiLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_dim, dim),
+            nn.Dropout(dropout)
+        )
+
+    def forward(self, x):
+        return self.net(x)
+
+
+class MultiHeadSelfAttention(nn.Module):
+    """
+    Implement multi head self attention layer using the "Einstein summation convention".
+    Paper: https://arxiv.org/abs/1706.03762
+    Blog: https://towardsdatascience.com/illustrated-self-attention-2d627e33b20a
+    Parameters
+    ----------
+    dim:
+        Token's dimension, EX: word embedding vector size
+    num_heads:
+        The number of distinct representations to learn
+    dim_head:
+        The dimension of the each head
+    """
+    def __init__(self, dim, num_heads = 8, dim_head = None):
+        super(MultiHeadSelfAttention, self).__init__()
+        self.num_heads = num_heads
+        self.dim_head = int(dim / num_heads) if dim_head is None else dim_head
+        _weight_dim = self.num_heads * self.dim_head
+        self.to_qvk = nn.Linear(dim, _weight_dim * 3, bias = False)
+        self.scale_factor = dim ** -0.5
+
+        self.scale_factor = dim ** -0.5
+
+        # Weight matrix for output, Size: num_heads*dim_head X dim
+        # Final linear transformation layer
+        self.w_out = nn.Linear(_weight_dim, dim, bias = False)
+
+    def forward(self, x):
+        qkv = self.to_qvk(x).chunk(3, dim = -1)
+        q, k, v = map(lambda t: rearrange(t, 'b p n (h d) -> b p h n d', h = self.num_heads), qkv)
+
+        dots = torch.matmul(q, k.transpose(-1, -2)) * self.scale_factor
+        attn = torch.softmax(dots, dim = -1)
+        out = torch.matmul(attn, v)
+        out = rearrange(out, 'b p h n d -> b p n (h d)')
+        return self.w_out(out)
+
+
+class Transformer(nn.Module):
+    def __init__(self, dim, depth, heads, dim_head, mlp_dim, dropout = 0.1):
+        super().__init__()
+        self.layers = nn.ModuleList([])
+        for _ in range(depth):
+            self.layers.append(nn.ModuleList([
+                PreNorm(dim, MultiHeadSelfAttention(dim, heads, dim_head)),
+                PreNorm(dim, FFN(dim, mlp_dim, dropout))
+            ]))
+
+    def forward(self, x):
+        for attn, ff in self.layers:
+            x = attn(x) + x
+            x = ff(x) + x
         return x
 
 
@@ -69,7 +151,7 @@ class InvertedResidual(nn.Module):
 
 
 class MobileVitBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, d_model, layers, feature_size):
+    def __init__(self, in_channels, out_channels, d_model, layers, mlp_dim):
         super(MobileVitBlock, self).__init__()
         # Local representation
         self.local_representation = nn.Sequential(
@@ -79,18 +161,7 @@ class MobileVitBlock(nn.Module):
             ConvNormAct(in_channels, d_model, 1)
         )
 
-        # Global representation
-        global_representation = []
-        token_size = ((feature_size - 1) // 2)**2
-        global_representation.append(nn.Unfold(kernel_size = 2, stride = 2))
-        global_representation.append(nn.Unfold(kernel_size = 2))
-
-        encoder_layer = nn.TransformerEncoderLayer(token_size, nhead = 1, dim_feedforward = d_model)
-        transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers = layers)
-        global_representation.append(transformer_encoder)
-
-        global_representation.append(nn.Fold((feature_size, feature_size), 2))
-        self.global_representation = nn.Sequential(*global_representation)
+        self.transformer = Transformer(d_model, layers, 1, 32, mlp_dim, 0.1)
 
         # Fusion block
         self.fusion_block1 = nn.Conv2d(d_model, in_channels, kernel_size = 1)
@@ -98,7 +169,11 @@ class MobileVitBlock(nn.Module):
 
     def forward(self, x):
         local_repr = self.local_representation(x)
-        global_repr = self.global_representation(local_repr)
+        # global_repr = self.global_representation(local_repr)
+        _, _, h, w = local_repr.shape
+        global_repr = rearrange(local_repr, 'b d (h ph) (w pw) -> b (ph pw) (h w) d', ph=2, pw=2)
+        global_repr = self.transformer(global_repr)
+        global_repr = rearrange(global_repr, 'b (ph pw) (h w) d -> b d (h ph) (w pw)', h=h//2, w=w//2, ph=2, pw=2)
 
         # Fuse the local and gloval features in the concatenation tensor
         fuse_repr = self.fusion_block1(global_repr)
