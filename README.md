@@ -44,11 +44,11 @@ optional arguments:
 
 ## Citation
 ```
-@InProceedings{Radosavovic2020,
-  title = {Designing Network Design Spaces},
-  author = {Ilija Radosavovic and Raj Prateek Kosaraju and Ross Girshick and Kaiming He and Piotr Doll{\'a}r},
-  booktitle = {CVPR},
-  year = {2020}
+@InProceedings{Sachin2021,
+  title = {MOBILEVIT: LIGHT-WEIGHT, GENERAL-PURPOSE, AND MOBILE-FRIENDLY VISION TRANSFORMER},
+  author = {Sachin Mehta and Mohammad Rastegari},
+  booktitle = {},
+  year = {2021}
 }
 ```
 
