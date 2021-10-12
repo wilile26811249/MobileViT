@@ -1,7 +1,5 @@
 # MobileViT
 
-# RegNet
-
 Unofficial PyTorch implementation of MobileViT based on paper [MOBILEVIT: LIGHT-WEIGHT, GENERAL-PURPOSE, AND MOBILE-FRIENDLY VISION TRANSFORMER](https://arxiv.org/abs/2110.02178).
 
 ---
@@ -9,6 +7,7 @@ Unofficial PyTorch implementation of MobileViT based on paper [MOBILEVIT: LIGHT-
 ## Table of Contents
 * [Model Architecture](#model-architecture)
 * [Usage](#usage)
+* [TODOs](#TODOs)
 * [Citation](#citation)
 
 
@@ -22,9 +21,28 @@ Unofficial PyTorch implementation of MobileViT based on paper [MOBILEVIT: LIGHT-
 ---
 
 ## Usage
+
+```bash=
+import torch
+import models
+
+img = torch.randn(1, 3, 256, 256)
+net = models.MobileViT_S()
+
+# XXS: 1.3M 、 XS: 2.3M 、 S: 5.6M
+print("MobileViT-S params: ", sum(p.numel() for p in net.parameters()))
+print(f"Output shape: {net(img).shape}")
+```
+
 ### Training
+- Single node with one GPU
 ```bash=
 python main.py
+```
+
+- Single node with multi GPU
+```bash=
+CUDA_VISIBLE_DEVICES=3,4 python -m torch.distributed.launch --nproc_per_node=2 --master_port=6666 main_ddp.py
 ```
 
 ```bash=
@@ -39,6 +57,10 @@ optional arguments:
   --weight-decay WD     Weight decay (default: 1e-5)
   --model-path PATH     Path to save the model
 ```
+
+---
+# TODOs
+- [ ] Train on ImageNet
 
 ---
 
