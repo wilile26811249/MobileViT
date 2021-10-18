@@ -7,7 +7,7 @@ Unofficial PyTorch implementation of MobileViT based on paper [MOBILEVIT: LIGHT-
 ## Table of Contents
 * [Model Architecture](#model-architecture)
 * [Usage](#usage)
-* [TODOs](#TODOs)
+* [Experiment Result](#experiment)
 * [Citation](#citation)
 
 
@@ -59,8 +59,18 @@ optional arguments:
 ```
 
 ---
-# TODOs
-- [ ] Train on ImageNet
+
+## Experiment
+
+![Accuracy of ImageNet](./figure/accuracy.png)
+
+![Loss of ImageNet](./figure/loss.png)
+
+### MobileVit-S Pretrained Weights: [weight](https://drive.google.com/file/d/1ZQt1vACHTN98QJYaT2JW3kPF-wziHyPX/view?usp=sharing)
+
+|Model  |  Dataset | Learning Rate |   LR Scheduler | Optimizer |  Weight decay |   Acc@1/Val  |  Acc@5/Val  |
+|-------|:--------:|:------:|:----:|:--------:|:-------:|:--------:|:-------:|
+|MobileViT |  ImageNet-1k |  0.05  | Cosine LR|  SGDM   |  1e-5   |  61.918%  |  83.05% |
 
 ---
 
