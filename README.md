@@ -67,6 +67,8 @@ optional arguments:
 ![Loss of ImageNet](./figure/loss.png)
 
 ### MobileVit-S Pretrained Weights: [weight](https://drive.google.com/file/d/1ZQt1vACHTN98QJYaT2JW3kPF-wziHyPX/view?usp=sharing)
+### MobileVit-XXS Pretrained Weights: [weight](https://drive.google.com/file/d/1PZGq1hVNokS1r5R3cCJr9IC75CyjL6a8/view?usp=sharing)
+
 
 |Model  |  Dataset | Learning Rate |   LR Scheduler | Optimizer |  Weight decay |   Acc@1/Val  |  Acc@5/Val  |
 |-------|:--------:|:------:|:----:|:--------:|:-------:|:--------:|:-------:|
