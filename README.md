@@ -70,14 +70,25 @@ optional arguments:
 ### MobileVit-XXS Pretrained Weights: [weight](https://drive.google.com/file/d/1PZGq1hVNokS1r5R3cCJr9IC75CyjL6a8/view?usp=sharing)
 
 ### How to load pretrained weight(training with DataParrael)
-Ref: https://discuss.pytorch.org/t/solved-keyerror-unexpected-key-module-encoder-embedding-weight-in-state-dict/1686/3
+Solution by the **[@Sehaba95](https://github.com/wilile26811249/MobileViT/issues/7)**:
+```python=
+def load_mobilevit_weights(model_path):
+  # Create an instance of the MobileViT model
+  net = MobileViT_S()
 
+  # Load the PyTorch state_dict
+  state_dict = torch.load(model_path, map_location=torch.device('cpu'))['state_dict']
 
-Another Sol: [By Sehaba95](https://github.com/wilile26811249/MobileViT/issues/7#issue-1209411394)
-```bash=
-net = MobileViT_S()
-weights = torch.load("MobileViT_S_model_best.pth.tar", map_location=lambda storage, loc: storage)
-net.load_state_dict({k.replace('module.',''):v for k,v in weights['state_dict'].items()}
+  # Since there is a problem in the names of layers, we will change the keys to meet the MobileViT model architecture
+  for key in list(state_dict.keys()):
+    state_dict[key.replace('module.', '')] = state_dict.pop(key)
+
+  # Once the keys are fixed, we can modify the parameters of MobileViT
+  net.load_state_dict(state_dict)
+
+  return net
+
+net = load_mobilevit_weights("MobileViT_S_model_best.pth.tar")
 ```
 
 ---
