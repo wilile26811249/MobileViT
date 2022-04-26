@@ -71,12 +71,14 @@ optional arguments:
 
 ### How to load pretrained weight(training with DataParrael)
 Ref: https://discuss.pytorch.org/t/solved-keyerror-unexpected-key-module-encoder-embedding-weight-in-state-dict/1686/3
+
 ```bash=
 net = MobileViT_S()
-weights = torch.load(PATH, map_location=lambda storage, loc: storage)
-model.load_state_dict({k.replace('module.',''):v for k,v in weights['state_dict'].items()}
+weights = torch.load("MobileViT_S_model_best.pth.tar", map_location=lambda storage, loc: storage)
+net.load_state_dict({k.replace('module.',''):v for k,v in weights['state_dict'].items()}
 ```
 
+---
 
 |Model  |  Dataset | Learning Rate |   LR Scheduler | Optimizer |  Weight decay |   Acc@1/Val  |  Acc@5/Val  |
 |-------|:--------:|:------:|:----:|:--------:|:-------:|:--------:|:-------:|
