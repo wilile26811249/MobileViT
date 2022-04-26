@@ -69,6 +69,14 @@ optional arguments:
 ### MobileVit-S Pretrained Weights: [weight](https://drive.google.com/file/d/1ZQt1vACHTN98QJYaT2JW3kPF-wziHyPX/view?usp=sharing)
 ### MobileVit-XXS Pretrained Weights: [weight](https://drive.google.com/file/d/1PZGq1hVNokS1r5R3cCJr9IC75CyjL6a8/view?usp=sharing)
 
+### How to load pretrained weight(training with DataParrael)
+Ref: https://discuss.pytorch.org/t/solved-keyerror-unexpected-key-module-encoder-embedding-weight-in-state-dict/1686/3
+```bash=
+net = MobileViT_S()
+weights = torch.load(PATH, map_location=lambda storage, loc: storage)
+model.load_state_dict({k.replace('module.',''):v for k,v in weights['state_dict'].items()}
+```
+
 
 |Model  |  Dataset | Learning Rate |   LR Scheduler | Optimizer |  Weight decay |   Acc@1/Val  |  Acc@5/Val  |
 |-------|:--------:|:------:|:----:|:--------:|:-------:|:--------:|:-------:|
