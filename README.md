@@ -71,7 +71,7 @@ optional arguments:
 
 ### How to load pretrained weight(training with DataParrael)
 Solution by the **[@Sehaba95](https://github.com/wilile26811249/MobileViT/issues/7)**:
-```python=
+```python
 def load_mobilevit_weights(model_path):
   # Create an instance of the MobileViT model
   net = MobileViT_S()
