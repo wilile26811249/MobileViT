@@ -71,7 +71,7 @@ optional arguments:
 
 ### How to load pretrained weight(training with DataParrael)
 Ref: https://discuss.pytorch.org/t/solved-keyerror-unexpected-key-module-encoder-embedding-weight-in-state-dict/1686/3
-
+Another Sol: [By Sehaba95](https://github.com/wilile26811249/MobileViT/issues/7#issue-1209411394)
 ```bash=
 net = MobileViT_S()
 weights = torch.load("MobileViT_S_model_best.pth.tar", map_location=lambda storage, loc: storage)
